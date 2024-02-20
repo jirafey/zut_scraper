@@ -96,27 +96,17 @@ def make_request(ids, target, result, anticounter, lock, subtract_from_the_start
     URL = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start=2024-02-25T00:00:00+01:00&end=2024-03-10T00:00:00+01:00"
 
     current_time = datetime.now() - timedelta(days=subtract_from_the_start)
-    formatted_current_time = current_time.strftime('%Y-%m-%dT%H:%M:%S%z')
-    end_time = current_time + timedelta(days=add_to_the_end)
-    formatted_end_time = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
-    formatted_string = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start={formatted_current_time}&end={formatted_end_time}"
-
-    try:
-        page = requests.get(URL)
+    formatted_current_time = current_time.strftime('%Y-%m-%dT%H:%M:%S%z')                                           end_time = current_time + timedelta(days=add_to_the_end)                                                        formatted_end_time = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    formatted_string = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start={formatted_current_time}&end={formatted_end_time}"                             
+    try:                                                        page = requests.get(URL)
         data = page.json()
-        if search_in_data(data, target):
-            with lock:
-                result.append(ids)
-        else:
-            with lock:
-                anticounter[0] += 1
-    except requests.exceptions.RequestException as e:
-        print(f"Request for {ids} failed with error: {e}")
-
-
-def search_requests(what_to_look_for, data_sheet, print_counter, print_anticounter):
+        if search_in_data(data, target):                            with lock:
+                result.append(ids)                              else:
+            with lock:                                                  anticounter[0] += 1
+    except requests.exceptions.RequestException as e:           print(f"Request for {ids} failed with error: {e}")                                                      
+                                                        def search_requests(what_to_look_for, data_sheet, print_counter, print_anticounter):
     start_time = time.time()
-    time.sleep(0.5)
+    time.sleep(0)
     target = what_to_look_for
     result = []
     anticounter = [0]
@@ -148,7 +138,10 @@ if __name__ == '__main__':
     subtract_from_the_start = 0  # What day to start from? (today - subtract_from_the_start)
     add_to_the_end = 21  # What day to end at? (today + add_to_the_end)
     search_query = "PO2_Moijwib_L_gr.4"  # What to search for? Literally anything i.e. can be a name of a professor
-    data_sheet = w22_algo2_term_01 + w21_algo2_term_01
+    data_sheet = w21_algo2_term_01
     # data_sheet = algo1 # or just w22_algo2_term_01 or w21_algo2_term_01
 
-    result, anticounter = search_requests(search_query, data_sheet, True, True)
+    result, anticounter = search_requests(search_query, data_sheet, False, False)
+    time.sleep(5)
+    data_sheet = w22_algo2_term_01
+    result, anticounter = search_requests(search_query, data_sheet, False, False)
