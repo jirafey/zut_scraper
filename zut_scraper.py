@@ -1,7 +1,3 @@
-import requests
-import threading
-import time
-
 algo1 = [
     54948, 54935, 54603, 53978, 53977, 53976, 53974, 53973, 53971, 53970,
     53968, 53967, 53965, 53964, 53962, 53961, 53960, 53959, 53957, 53956,
@@ -33,8 +29,8 @@ algo1 = [
     41572
 ]
 
-w22_algo2_term_01_data_sheet_arr = [
-55241, 54935, 54603, 54134, 53978, 53976, 53974, 53964, 53962, 53961,
+w22_algo2_term_01 = [
+    55241, 54935, 54603, 54134, 53978, 53976, 53974, 53964, 53962, 53961,
     53960, 53953, 53952, 53947, 53945, 53944, 53940, 53935, 53928, 53916,
     53914, 53909, 53908, 53903, 53896, 53891, 53889, 53882, 53879, 53878,
     53877, 53876, 53874, 53873, 53872, 53869, 53868, 53861, 53855, 53852,
@@ -53,7 +49,7 @@ w22_algo2_term_01_data_sheet_arr = [
     39512, 39325, 39274, 34993, 32921
 ]
 
-w21_algo2_term_01_data_sheet_arr = [
+w21_algo2_term_01 = [
     56868, 54948, 54134, 53971, 53967, 53965, 53957, 53956, 53955, 53949,
     53947, 53943, 53942, 53938, 53937, 53935, 53934, 53931, 53927, 53926,
     53920, 53915, 53913, 53912, 53911, 53910, 53907, 53906, 53905, 53902,
@@ -75,6 +71,11 @@ w21_algo2_term_01_data_sheet_arr = [
     32921
 ]
 
+import requests
+import threading
+import time
+from datetime import datetime, timedelta
+
 
 def search_in_data(data, target):
     if isinstance(data, list):
@@ -91,8 +92,14 @@ def search_in_data(data, target):
     return False
 
 
-def make_request(ids, target, result, anticounter, lock):
-    URL = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start=2024-02-25T00:00:00+01:00&end=2024-02-28T00:00:00+01:00"
+def make_request(ids, target, result, anticounter, lock, subtract_from_the_start, add_to_the_end):
+    URL = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start=2024-02-25T00:00:00+01:00&end=2024-03-10T00:00:00+01:00"
+
+    current_time = datetime.now() - timedelta(days=subtract_from_the_start)
+    formatted_current_time = current_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    end_time = current_time + timedelta(days=add_to_the_end)
+    formatted_end_time = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    formatted_string = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start={formatted_current_time}&end={formatted_end_time}"
 
     try:
         page = requests.get(URL)
@@ -107,32 +114,41 @@ def make_request(ids, target, result, anticounter, lock):
         print(f"Request for {ids} failed with error: {e}")
 
 
-def brrrrrr():
+def search_requests(what_to_look_for, data_sheet, print_counter, print_anticounter):
     start_time = time.time()
-    target = "PO2_Moijwib_L_gr.4"
-
+    time.sleep(0.5)
+    target = what_to_look_for
     result = []
     anticounter = [0]
-
     lock = threading.Lock()
 
     threads = []
-    for ids in w21_algo2_term_01_data_sheet_arr+w22_algo2_term_01_data_sheet_arr:
-        thread = threading.Thread(target=make_request, args=(ids, target, result, anticounter, lock))
+    for ids in data_sheet:
+        thread = threading.Thread(target=make_request, args=(
+            ids, target, result, anticounter, lock, subtract_from_the_start, add_to_the_end))
         thread.start()
         threads.append(thread)
 
     for thread in threads:
         thread.join()
-    print("Full counter:", len(w21_algo2_term_01_data_sheet_arr+w22_algo2_term_01_data_sheet_arr))
     end_time = time.time()
     elapsed_time = end_time - start_time
     print("Elapsed time:", elapsed_time, "seconds")
+    if print_counter:
+        print("Full counter:", len(w21_algo2_term_01 + w22_algo2_term_01))
+    if print_anticounter:
+        print("Anticounter:", anticounter[0])
+    for item in result:
+        print(item)
     return result, anticounter[0]
 
 
 if __name__ == '__main__':
-    result, anticounter = brrrrrr()
-    for item in result:
-        print(item)
-    print(anticounter)
+    # variables to change:
+    subtract_from_the_start = 0  # What day to start from? (today - subtract_from_the_start)
+    add_to_the_end = 21  # What day to end at? (today + add_to_the_end)
+    search_query = "PO2_Moijwib_L_gr.4"  # What to search for? Literally anything i.e. can be a name of a professor
+    data_sheet = w22_algo2_term_01 + w21_algo2_term_01
+    # data_sheet = algo1 # or just w22_algo2_term_01 or w21_algo2_term_01
+
+    result, anticounter = search_requests(search_query, data_sheet, True, True)
