@@ -1,3 +1,8 @@
+import requests
+import threading
+import time
+from datetime import datetime, timedelta
+
 algo1 = [
     54948, 54935, 54603, 53978, 53977, 53976, 53974, 53973, 53971, 53970,
     53968, 53967, 53965, 53964, 53962, 53961, 53960, 53959, 53957, 53956,
@@ -71,10 +76,7 @@ w21_algo2_term_01 = [
     32921
 ]
 
-import requests
-import threading
-import time
-from datetime import datetime, timedelta
+algo2_term_01 = w21_algo2_term_01 + w22_algo2_term_01
 
 
 def search_in_data(data, target):
@@ -92,28 +94,36 @@ def search_in_data(data, target):
     return False
 
 
-def make_request(ids, target, result, anticounter, lock, subtract_from_the_start, add_to_the_end):
-    URL = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start=2024-02-25T00:00:00+01:00&end=2024-03-10T00:00:00+01:00"
+def make_request(ids, target, result, anticounter, lock, start_days, end_days):
+    current_time = datetime.now() - timedelta(days=start_days)
+    formatted_current_time = current_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    end_time = current_time + timedelta(days=end_days)
+    formatted_end_time = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    url = (f"https://plan.zut.edu.pl/schedule_student.php?number={ids}"
+           f"&start={formatted_current_time}&end={formatted_end_time}")
 
-    current_time = datetime.now() - timedelta(days=subtract_from_the_start)
-    formatted_current_time = current_time.strftime('%Y-%m-%dT%H:%M:%S%z')                                           end_time = current_time + timedelta(days=add_to_the_end)                                                        formatted_end_time = end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
-    formatted_string = f"https://plan.zut.edu.pl/schedule_student.php?number={ids}&start={formatted_current_time}&end={formatted_end_time}"                             
-    try:                                                        page = requests.get(URL)
+    try:
+        page = requests.get(url)
         data = page.json()
-        if search_in_data(data, target):                            with lock:
-                result.append(ids)                              else:
-            with lock:                                                  anticounter[0] += 1
-    except requests.exceptions.RequestException as e:           print(f"Request for {ids} failed with error: {e}")                                                      
-                                                        def search_requests(what_to_look_for, data_sheet, print_counter, print_anticounter):
+        if search_in_data(data, target):
+            with lock:
+                result.append(ids)
+        else:
+            with lock:
+                anticounter[0] += 1
+    except requests.exceptions.RequestException as e:
+        print(f"Request for {ids} failed with error: {e}")
+
+
+def search_requests(what_to_look_for, data_sheets, print_result, print_counter, print_anticounter, print_time):
     start_time = time.time()
-    time.sleep(0)
     target = what_to_look_for
     result = []
     anticounter = [0]
     lock = threading.Lock()
 
     threads = []
-    for ids in data_sheet:
+    for ids in data_sheets:
         thread = threading.Thread(target=make_request, args=(
             ids, target, result, anticounter, lock, subtract_from_the_start, add_to_the_end))
         thread.start()
@@ -123,13 +133,15 @@ def make_request(ids, target, result, anticounter, lock, subtract_from_the_start
         thread.join()
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print("Elapsed time:", elapsed_time, "seconds")
+    if print_time:
+        print("Elapsed time:", elapsed_time, "seconds")
     if print_counter:
         print("Full counter:", len(w21_algo2_term_01 + w22_algo2_term_01))
     if print_anticounter:
         print("Anticounter:", anticounter[0])
-    for item in result:
-        print(item)
+    if print_result:
+        for item in result:
+            print(item)
     return result, anticounter[0]
 
 
@@ -141,7 +153,11 @@ if __name__ == '__main__':
     data_sheet = w21_algo2_term_01
     # data_sheet = algo1 # or just w22_algo2_term_01 or w21_algo2_term_01
 
-    result, anticounter = search_requests(search_query, data_sheet, False, False)
-    time.sleep(5)
+    delay = 5
+
+    result1, anticounter1 = search_requests(search_query, data_sheet, False, False, False, False)
     data_sheet = w22_algo2_term_01
-    result, anticounter = search_requests(search_query, data_sheet, False, False)
+    time.sleep(delay)
+    result2, anticounter2 = search_requests(search_query, data_sheet, False, False, False, False)
+    unique_result = list(set(result1 + result2))
+    print(unique_result)
