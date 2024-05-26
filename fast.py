@@ -1,3 +1,8 @@
+# use with vpn or something if you scrape too much it may be beneficial
+# download algorithms results pdfs and check student IDs
+# it would be easier to put these files here, but this is not a good practice
+# due to showing personal data.
+
 import asyncio
 import aiohttp
 from datetime import datetime, timedelta
@@ -72,14 +77,14 @@ if __name__ == "__main__":
     algo1 = eval(file_content.split("algo1 = ")[1].split("\n\n")[0])
     w22_algo2_term_01 = eval(file_content.split("w22_algo2_term_01 = ")[1].split("\n\n")[0])
     w21_algo2_term_01 = eval(file_content.split("w21_algo2_term_01 = ")[1].split("\n\n")[0])
-    stacjo = eval(file_content.split("stacjo = ")[1].split("\n\n")[0])
-    zdalne = eval(file_content.split("zdalne = ")[1].split("\n\n")[0])
-    all = eval(file_content.split("all = ")[1].split("\n\n")[0])
-    data_sheet = all
+    # # stacjo = eval(file_content.split("stacjo = ")[1].split("\n\n")[0])
+    # zdalne = eval(file_content.split("zdalne = ")[1].split("\n\n")[0])
+    # all = eval(file_content.split("all = ")[1].split("\n\n")[0])
+    data_sheet = w22_algo2_term_01 + w21_algo2_term_01
 
     subtract_from_the_start = 0  # What day to start from? (today - subtract_from_the_start)
     add_to_the_end = 21  # What day to end at? (today + add_to_the_end)
 
-    search_query = "Transmisja danych (L)", "Śmietanka", "S1_I_L_220A"
+    search_query = "Zarządzanie informacją 1 (L)", "Bartków", "224B"
 
-    asyncio.run(search_requests(search_query, data_sheet, "or", True, False, False, True))
+    asyncio.run(search_requests(search_query, data_sheet, "and", True, False, False, True))
