@@ -1,5 +1,14 @@
 ## Finding Index Numbers of People from Specific Groups (Including Group Size)
 
+
+### Adjust (if you try to search through before the start of the semester you can get no results)
+Make sure 21 days in the future is actually after the semester has started or change to some other arbitrary value
+
+```python
+subtract_from_the_start = 0  # What day to start from? (today - subtract_from_the_start)
+add_to_the_end = 21  # What day to end at? (today + add_to_the_end)
+```
+
 ### Using Index Numbers Based on Results, e.g.
 - Results from `Algorithms 2` exam
 We can determine a person's **first and last name**.
