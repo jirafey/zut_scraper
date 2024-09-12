@@ -64,9 +64,14 @@ async def search_requests(what_to_look_for, data_sheets, logical_operator, print
 
     if print_result:
         unique_result = list(set(result))
-        print(unique_result)
         print(len(unique_result))
-
+        string_new = '('
+        for i in range(len(unique_result)):
+            string_new += str(unique_result[i])
+            if i!=len(unique_result)-1:
+                string_new += "|"
+        string_new += ")"
+        print(string_new)
     return result, anticounter[0]
 
 if __name__ == "__main__":
@@ -83,8 +88,8 @@ if __name__ == "__main__":
     data_sheet = w22_algo2_term_01 + w21_algo2_term_01
 
     subtract_from_the_start = 0  # What day to start from? (today - subtract_from_the_start)
-    add_to_the_end = 21  # What day to end at? (today + add_to_the_end)
+    add_to_the_end = 30  # What day to end at? (today + add_to_the_end)
 
-    search_query = "Zarządzanie informacją 1 (L)", "Bartków", "224B"
+    search_query = "Grafika webowa (L)", "PO8_Gw_L_gr.1"
 
     asyncio.run(search_requests(search_query, data_sheet, "and", True, False, False, True))
