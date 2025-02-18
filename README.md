@@ -43,6 +43,7 @@ https://plan.zut.edu.pl/schedule_student.php?number=53879&start=2024-05-20T00%3A
 3. Send a `query` via the `GUI`, EXAMPLE:
 
 ![image](https://github.com/jirafey/zut_scraper/assets/97115044/600caee6-7230-4772-940c-f416758aace5)
+
 4. Now in the `Network` tab there should be new entry
 5. Double-click wherever on the blue highlighted area of the entry, EXAMPLE:
 
